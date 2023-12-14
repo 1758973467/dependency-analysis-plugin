@@ -1,0 +1,21 @@
+{
+  "name": "dependency-analysis-plugin",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "files": [
+    "src/index.js"
+  ],
+  "scripts": {},
+  "keywords": [
+    "webpack",
+    "plugin",
+    "dependency",
+    "dependency-analysis-plugin"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "webpack": "^4.47.0"
+  }
+}

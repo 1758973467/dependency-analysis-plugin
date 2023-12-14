@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.1/dist/echarts.min.js"></script>
+    <style>
+      #main {
+        width: 500px;
+        height: 500px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main"></div>
+    <script>
+      const depJson = [
+        {
+          from: null,
+          to: "src\\main.js",
+        },
+        {
+          from: "src\\main.js",
+          to: "src\\App.vue",
+        },
+        {
+          from: "src\\main.js",
+          to: "node_modules\\vue\\dist\\vue.runtime.esm.js",
+        },
+        {
+          from: "src\\App.vue",
+          to: "src\\App.vue",
+        },
+        {
+          from: "src\\App.vue",
+          to: "src\\App.vue",
+        },
+        {
+          from: "src\\App.vue",
+          to: "node_modules\\vue-loader\\lib\\runtime\\componentNormalizer.js",
+        },
+        {
+          from: "src\\App.vue",
+          to: "src\\App.vue",
+        },
+        {
+          from: "src\\main.js",
+          to: "src\\router\\index.js",
+        },
+        {
+          from: "src\\main.js",
+          to: "src\\store\\index.js",
+        },
+        {
+          from: "src\\App.vue",
+          to: "src\\App.vue",
+        },
+        {
+          from: "",
+          to: "src\\App.vue",
+        },
+        {
+          from: "node_modules\\vue\\dist\\vue.runtime.esm.js",
+          to: "node_modules\\webpack\\buildin\\global.js",
+        },
+        {
+          from: "src\\router\\index.js",
+          to: "node_modules\\vue\\dist\\vue.runtime.esm.js",
+        },
+        {
+          from: "src\\store\\index.js",
+          to: "node_modules\\vue\\dist\\vue.runtime.esm.js",
+        },
+        {
+          from: "src\\router\\index.js",
+          to: "src\\views\\Home.vue",
+        },
+        {
+          from: "src\\router\\index.js",
+          to: "src\\views\\About.vue",
+        },
+        {
+          from: "src\\views\\Home.vue",
+          to: "node_modules\\vue-loader\\lib\\runtime\\componentNormalizer.js",
+        },
+        {
+          from: "src\\views\\Home.vue",
+          to: "src\\views\\Home.vue",
+        },
+        {
+          from: "src\\views\\Home.vue",
+          to: "src\\views\\Home.vue",
+        },
+        {
+          from: "src\\views\\Home.vue",
+          to: "src\\views\\Home.vue",
+        },
+        {
+          from: "src\\views\\Home.vue",
+          to: "src\\views\\Home.vue",
+        },
+        {
+          from: "src\\views\\About.vue",
+          to: "node_modules\\vue-loader\\lib\\runtime\\componentNormalizer.js",
+        },
+        {
+          from: "src\\views\\About.vue",
+          to: "src\\views\\About.vue",
+        },
+        {
+          from: "src\\views\\About.vue",
+          to: "src\\views\\About.vue",
+        },
+        {
+          from: "src\\App.vue",
+          to: "node_modules\\css-loader\\dist\\runtime\\api.js",
+        },
+        {
+          from: "src\\views\\Home.vue",
+          to: "src\\components\\HelloWorld.vue",
+        },
+        {
+          from: "src\\components\\HelloWorld.vue",
+          to: "node_modules\\vue-loader\\lib\\runtime\\componentNormalizer.js",
+        },
+        {
+          from: "src\\components\\HelloWorld.vue",
+          to: "src\\components\\HelloWorld.vue",
+        },
+        {
+          from: "src\\components\\HelloWorld.vue",
+          to: "src\\components\\HelloWorld.vue",
+        },
+        {
+          from: "src\\components\\HelloWorld.vue",
+          to: "src\\components\\HelloWorld.vue",
+        },
+        {
+          from: "src\\components\\HelloWorld.vue",
+          to: "src\\components\\HelloWorld.vue",
+        },
+        {
+          from: "src\\components\\HelloWorld.vue",
+          to: "src\\components\\HelloWorld.vue",
+        },
+        {
+          from: "src\\components\\HelloWorld.vue",
+          to: "src\\components\\HelloWorld.vue",
+        },
+        {
+          from: "",
+          to: "src\\components\\HelloWorld.vue",
+        },
+        {
+          from: "src\\router\\index.js",
+          to: "node_modules\\vue-router\\dist\\vue-router.esm.js",
+        },
+        {
+          from: "src\\store\\index.js",
+          to: "node_modules\\vuex\\dist\\vuex.esm.js",
+        },
+        {
+          from: "src\\components\\HelloWorld.vue",
+          to: "node_modules\\css-loader\\dist\\runtime\\api.js",
+        },
+        {
+          from: "src\\views\\Home.vue",
+          to: "src\\assets\\logo.png",
+        },
+        {
+          from: "node_modules\\vuex\\dist\\vuex.esm.js",
+          to: "node_modules\\webpack\\buildin\\global.js",
+        },
+      ];
+      var chartDom = document.getElementById("main");
+      var myChart = echarts.init(chartDom);
+      const allVertex = Array.from(
+        new Set([
+          ...depJson.map(item => item.from),
+          ...depJson.map(item => item.to),
+        ])
+      );
+      const data = allVertex.map(item => {
+        return {
+          name: item,
+          value: item,
+        };
+      });
+      const edges = depJson.map(item => {
+        return {
+          source: item.from,
+          target: item.to,
+        };
+      });
+      myChart.setOption({
+        series: [
+          {
+            type: "graph",
+            layout: "force",
+            animation: false,
+            roam: true,
+            draggable: true,
+            data: data,
+            force: {
+              // initLayout: 'circular'
+              // gravity: 0
+              repulsion: 100,
+              edgeLength: 5,
+            },
+            edges: edges,
+          },
+        ],
+      });
+    </script>
+  </body>
+</html>
