@@ -17,5 +17,8 @@
   "license": "MIT",
   "peerDependencies": {
     "webpack": "^4.47.0"
+  },
+  "dependencies": {
+    "mkdirp": "^3.0.1"
   }
 }

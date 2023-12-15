@@ -1,8 +1,6 @@
 const path = require('node:path')
 const fs = require('node:fs/promises')
-
-const allDataDepSet = new Set()
-
+const { mkdirp } = require('mkdirp')
 function makeGraph(len) {
     const graph = Array.from({ length: len }, () => Array.from({ length: len }, () => 0))
     return graph
@@ -40,6 +38,12 @@ function generateGraph(edgeSet) {
  *      issuer 发起人
  */
 class DependenciesAnalyzerPlugin {
+    static className = 'DependenciesAnalyzerPlugin'
+
+    constructor(options) {
+        this.allDataDepSet = new Set()
+        this.outputPath = this.options?.outputPath || ''
+    }
 
     afterResolve = (result, callback) => {
         const { resourceResolveData: {
@@ -49,7 +53,7 @@ class DependenciesAnalyzerPlugin {
             path
         } } = result;
 
-        allDataDepSet.add({
+        this.allDataDepSet.add({
             from: issuer,
             to: path
         })
@@ -57,22 +61,30 @@ class DependenciesAnalyzerPlugin {
     }
 
     handleFinishModules = (modules, callback) => {
-        const [graph, vertexMap] = generateGraph(allDataDepSet)
-        const p1 = fs.writeFile('./graph.json', JSON.stringify(graph))
-        const p2 = fs.writeFile('./vertexMap.json', JSON.stringify(Array.from(vertexMap)))
-        const p3 = fs.writeFile('./dep.json', JSON.stringify(Array.from(allDataDepSet)))
-        Promise.all([p1, p2, p3]).then(() => {
-            callback()
+        const [graph, vertexMap] = generateGraph(this.allDataDepSet)
+        mkdirp(this.outputPath).then(() => {
+            const p1 = fs.writeFile(path.join(this.outputPath, './graph.json'), JSON.stringify(graph))
+            const p2 = fs.writeFile(path.join(this.outputPath, './vertexMap.json'), JSON.stringify(Array.from(vertexMap)))
+            const p3 = fs.writeFile(path.join(this.outputPath, './dep.json'), JSON.stringify(Array.from(this.allDataDepSet)))
+            Promise.all([p1, p2, p3]).then(() => {
+                callback()
+            })
         })
     }
 
     apply(compiler) {
+        if (!this.outputPath) {
+            compiler.hooks.afterEnvironment.tap(DependenciesAnalyzerPlugin.className,
+                () => {
+                    this.outputPath = compiler.options.output.path
+                })
+        }
 
         compiler.hooks.normalModuleFactory.tap(
-            "FastDependenciesAnalyzerPlugin",
+            DependenciesAnalyzerPlugin.className,
             nmf => {
                 nmf.hooks.afterResolve.tapAsync(
-                    "FastDependenciesAnalyzerPlugin",
+                    DependenciesAnalyzerPlugin.className,
                     this.afterResolve
                 );
             }
@@ -80,16 +92,14 @@ class DependenciesAnalyzerPlugin {
 
 
         compiler.hooks.compilation.tap(
-            "FastDependenciesAnalyzerPlugin",
-
+            DependenciesAnalyzerPlugin.className,
             compilation => {
                 compilation.hooks.finishModules.tapAsync(
-                    "FastDependenciesAnalyzerPlugin",
+                    DependenciesAnalyzerPlugin.className,
                     this.handleFinishModules
                 );
             }
         );
-
     }
 }
 module.exports = DependenciesAnalyzerPlugin
