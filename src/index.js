@@ -1,6 +1,8 @@
 const path = require('node:path')
 const fs = require('node:fs/promises')
+const fsSync = require('node:fs')
 const { mkdirp } = require('mkdirp')
+const chalk = require('chalk')
 function makeGraph(len) {
     const graph = Array.from({ length: len }, () => Array.from({ length: len }, () => 0))
     return graph
@@ -42,7 +44,14 @@ class DependenciesAnalyzerPlugin {
 
     constructor(options) {
         this.allDataDepSet = new Set()
-        this.outputPath = this.options?.outputPath || ''
+        if (typeof options?.outputPath === 'string') {
+            if (fsSync.existsSync(path.normalize(options.outputPath))) {
+                console.warn(chalk.red('will overwrite result!'));
+            }
+            this.outputPath = path.normalize(options.outputPath)
+        } else {
+            this.outputPath = null
+        }
     }
 
     afterResolve = (result, callback) => {
@@ -63,9 +72,9 @@ class DependenciesAnalyzerPlugin {
     handleFinishModules = (modules, callback) => {
         const [graph, vertexMap] = generateGraph(this.allDataDepSet)
         mkdirp(this.outputPath).then(() => {
-            const p1 = fs.writeFile(path.join(this.outputPath, './graph.json'), JSON.stringify(graph))
-            const p2 = fs.writeFile(path.join(this.outputPath, './vertexMap.json'), JSON.stringify(Array.from(vertexMap)))
-            const p3 = fs.writeFile(path.join(this.outputPath, './dep.json'), JSON.stringify(Array.from(this.allDataDepSet)))
+            const p1 = fs.writeFile(path.join(this.outputPath, 'graph.json'), JSON.stringify(graph))
+            const p2 = fs.writeFile(path.join(this.outputPath, 'vertexMap.json'), JSON.stringify(Array.from(vertexMap)))
+            const p3 = fs.writeFile(path.join(this.outputPath, 'dep.json'), JSON.stringify(Array.from(this.allDataDepSet)))
             Promise.all([p1, p2, p3]).then(() => {
                 callback()
             })
