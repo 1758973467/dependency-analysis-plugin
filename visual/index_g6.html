@@ -5,13 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.1/dist/echarts.min.js"></script>
-    <style>
-      #main {
-        width: 500px;
-        height: 500px;
-      }
-    </style>
+    <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.7.1/dist/g6.min.js"></script>
+    <style></style>
   </head>
   <body>
     <div id="main"></div>
@@ -174,42 +169,54 @@
           to: 'node_modules\\webpack\\buildin\\global.js',
         },
       ];
-      var chartDom = document.getElementById('main');
-      var myChart = echarts.init(chartDom);
-      const allVertex = Array.from(
-        new Set([...depJson.map(item => item.from), ...depJson.map(item => item.to)]),
-      );
-      const data = allVertex.map(item => {
-        return {
-          name: item,
-          value: item,
-        };
+
+      const data = {
+        nodes: Array.from(
+          new Set([...depJson.map(item => item.from), ...depJson.map(item => item.to)]),
+        ).map(item => {
+          let label = item;
+          if (item && item.includes('\\')) {
+            const strs = item.split('\\');
+            label = strs[strs.length - 1];
+          }
+          return {
+            id: item,
+            label: label,
+          };
+        }),
+        edges: depJson.map(item => {
+          return {
+            source: item.from,
+            target: item.to,
+          };
+        }),
+      };
+      const minimap = new G6.Minimap({
+        size: [100, 100],
+        className: 'minimap',
+        type: 'delegate',
       });
-      const edges = depJson.map(item => {
-        return {
-          source: item.from,
-          target: item.to,
-        };
+      const grid = new G6.Grid();
+      const graph = new G6.Graph({
+        container: 'main', // 指定图画布的容器 id，与第 9 行的容器对应
+        // 画布宽高
+        width: 800,
+        height: 500,
+        layout: {
+          // Object，可选，布局的方法及其配置项，默认为 random 布局。
+          type: 'radial', // 指定为力导向布局
+          preventOverlap: true, // 防止节点重叠
+          // nodeSize: 30        // 节点大小，用于算法中防止节点重叠时的碰撞检测。由于已经在上一节的元素配置中设置了每个节点的 size 属性，则不需要在此设置 nodeSize。
+        },
+        modes: {
+          default: ['drag-canvas', 'zoom-canvas', 'drag-node'], // 允许拖拽画布、放缩画布、拖拽节点
+        },
+        plugins: [minimap, grid],
       });
-      myChart.setOption({
-        series: [
-          {
-            type: 'graph',
-            layout: 'force',
-            animation: false,
-            roam: true,
-            draggable: true,
-            data: data,
-            force: {
-              // initLayout: 'circular'
-              // gravity: 0
-              repulsion: 100,
-              edgeLength: 5,
-            },
-            edges: edges,
-          },
-        ],
-      });
+      // 读取数据
+      graph.data(data);
+      // 渲染图
+      graph.render();
     </script>
   </body>
 </html>
